@@ -1,5 +1,5 @@
 {
-module CSSTokens where
+module XML.Selectors.CSS.Tokens where
 }
 
 %wrapper "monad"
