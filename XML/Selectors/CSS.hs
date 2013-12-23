@@ -1,5 +1,12 @@
+-- | This module exports functions for parsing and executing CSS selector
+-- expressions in pure Haskell. TH QuasiQuoters are provided in
+-- "XML.Selectors.CSS.TH" for validation and static-checking of CSS selectors.
+
 {-# LANGUAGE OverloadedStrings #-}
-module XML.Selectors.CSS (toAxis) where
+module XML.Selectors.CSS (
+    toAxis,
+    parsePath
+    ) where
 
 import XML.Selectors.CSS.Parse
 import XML.Selectors.CSS.Types
@@ -10,9 +17,13 @@ import Data.String
 import qualified Data.Map as M
 import qualified Data.Text as T
 
-toAxis (Selector selector) = simpleAxis selector
-toAxis (Combinator simple comb selector) = axis where
-    axis = simpleAxis simple >=> combaxis >=> toAxis selector
+-- | Convert CSS 'Selector' to an 'Axis'.
+toAxis :: Selector -> Axis
+toAxis selector = descendant >=> toAxis' selector
+
+toAxis' (Selector selector) = simpleAxis selector
+toAxis' (Combinator simple comb selector) = axis where
+    axis = simpleAxis simple >=> combaxis >=> toAxis' selector
     combaxis = case comb of
         Descendant -> descendant
         Child -> child
@@ -44,4 +55,3 @@ simpleAxis (SimpleSelector mbelem specs mbpseudo) = axis where
                 val' = fromString val
                 vallen = T.length val'
         _ -> []
-

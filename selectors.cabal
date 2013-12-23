@@ -3,9 +3,8 @@
 
 name:                selectors
 version:             0.1.0.0
--- synopsis:            
--- description:         
--- license:             
+synopsis:            CSS Selectors for DOM traversal
+license:             BSD3
 license-file:        LICENSE
 author:              Rob O'Callahan
 maintainer:          ropoctl@gmail.com
