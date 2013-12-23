@@ -1,6 +1,7 @@
-{ module XML.Selectors.CSS.Parse where
+{ module XML.Selectors.CSS.Parse (parsePath) where
 
-import XML.Selectors.CSS.Tokens (Token(..), lexer)
+import XML.Selectors.CSS.Tokens (lexer)
+import XML.Selectors.CSS.Types
 }
 
 %name cssPath
@@ -10,6 +11,7 @@ import XML.Selectors.CSS.Tokens (Token(..), lexer)
 %token
     sp                      { TokenSpace }
     name                    { TokenName $$ }
+    string                  { TokenString $$ }
     '+'                     { TokenPlus }
     '-'                     { TokenMinus }
     '/'                     { TokenSlash }
@@ -24,7 +26,6 @@ import XML.Selectors.CSS.Tokens (Token(..), lexer)
     "^="                    { TokenBeginsWith }
     "$="                    { TokenEndsWith }
     "|="                    { TokenDashMatch }
-    '"'                     { TokenQuote }
     ':'                     { TokenPseudo }
     '('                     { TokenOP }
     ')'                     { TokenCP }
@@ -40,10 +41,10 @@ Selector    : SimpleSelector                        { Selector $1 }
 
 Combinator  : sp                                    { Descendant }
             | sp Combinator                         { $2 }
-            | '+'                                   { FollSibling }
-            | '+' sp                                { FollSibling }
-            | '~'                                   { AnyFollSibling }
-            | '~' sp                                { AnyFollSibling }
+            | '+'                                   { FollowingSibling }
+            | '+' sp                                { FollowingSibling }
+            | '~'                                   { AnySibling }
+            | '~' sp                                { AnySibling }
             | '>'                                   { Child }
             | '>' sp                                { Child }
 
@@ -60,48 +61,27 @@ specs   : Specifier                                 { [$1] }
 Specifier   : '#' name                              { ID $2 }
             | '.' name                              { Class $2 }
             | '[' attr ']'                          { $2 }
+            | '[' attr sp ']'                       { $2 }
 
 attr    : name Pred                                 { Attrib $1 $2 }
         | sp attr                                   { $2 }
 
-Pred    : '=' spacedname                            { Equals $2 }
-        | "~=" spacedname                           { Includes $2 }
-        | "|=" spacedname                           { DashMatch $2 }
-        | "^=" spacedname                           { BeginsWith $2 }
-        | "$=" spacedname                           { EndsWith $2 }
-        | sp Pred                                   { $2 }
-        |                                           { None }
+Pred    : sp Pred                                   { $2 }
+        | PredOp sp string                          { Pred $1 $3 }
+        | PredOp string                             { Pred $1 $2 }
+
+PredOp  : '='                                       { Equals }
+        | "~="                                      { Includes }
+        | "|="                                      { DashMatch }
+        | "^="                                      { BeginsWith }
+        | "$="                                      { EndsWith }
 
 Pseudo  : ':' firstchild                            { FirstChild }
         | ':' lastchild                             { LastChild }
 
-spacedname  : sp quotedname sp                      { $2 }
-            | quotedname                            { $1 }
-            | quotedname sp                         { $1 }
-
-quotedname  : '"' name '"'                          { $2 }
-
 {
 parseError toks = Left $ "parse error: " ++ show toks
 
-data Selector = Selector SimpleSelector
-                | Combinator SimpleSelector Comb Selector deriving Show
-
-data Comb = Descendant | Child | FollSibling | AnyFollSibling deriving Show
-
-data SimpleSelector = SimpleSelector (Maybe String) [Specifier] (Maybe Pseudo)
-                    | Universal deriving Show
-
-data Specifier = ID String | Class String | Attrib String Pred deriving Show
-
-data Pred = None
-            | Equals String
-            | Includes String
-            | DashMatch String
-            | BeginsWith String
-            | EndsWith String deriving Show
-
-data Pseudo = FirstChild | LastChild deriving Show
-
+parsePath :: String -> Either String Selector
 parsePath str = lexer str >>= cssPath
 }

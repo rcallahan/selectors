@@ -1,5 +1,7 @@
 {
 module XML.Selectors.CSS.Tokens where
+
+import XML.Selectors.CSS.Types
 }
 
 %wrapper "monad"
@@ -12,6 +14,9 @@ $namechar = [$namestart \- $digit]
 @nat = [0-9]+
 @name = $namestart $namechar*
 @hashname = $namechar+
+@string1 = [^\"]*
+@string2 = [^\']*
+
 
 tokens :-
 
@@ -25,10 +30,10 @@ tokens :-
     \>                      { mkT TokenChild }
     \~                      { mkT TokenAnySibling }
     \#                      { mkT TokenHash }
-    \:^first\-child        { mkT TokenFirstChild }
-    \:^last\-child         { mkT TokenLastChild }
-    \:^nth\-child          { mkT TokenNthChild }
-    \:^nth\-last\-child    { mkT TokenNthLastChild }
+    \:^first\-child         { mkT TokenFirstChild }
+    \:^last\-child          { mkT TokenLastChild }
+    \:^nth\-child           { mkT TokenNthChild }
+    \:^nth\-last\-child     { mkT TokenNthLastChild }
     \#^ @hashname           { \(_,_,_,s) l -> return $ TokenName (take l s) }
     \.                      { mkT TokenDot }
     \=                      { mkT TokenEquals }
@@ -39,7 +44,8 @@ tokens :-
     \:                      { mkT TokenPseudo }
     \[                      { mkT TokenOB }
     \]                      { mkT TokenCB }
-    \"                      { mkT TokenQuote }
+    \" @string1 \"          { \(_,_,_,(_:s)) l -> return $ TokenString $ take (l-2) s }
+    \' @string2 \'          { \(_,_,_,(_:s)) l -> return $ TokenString $ take (l-2) s }
     <0> \(                  { \_ _ -> alexSetStartCode expr >> return TokenOP }
     <expr> \)               { \_ _ -> alexSetStartCode 0 >> return TokenCP }
     <expr> @nat             { \(_,_,_,s) l -> return $ TokenDigits (take l s) }
@@ -47,34 +53,6 @@ tokens :-
 {
 
 mkT p _ _ = return p
-
-data Token = TokenSpace |
-             TokenName String |
-             TokenPlus |
-             TokenMinus |
-             TokenSlash |
-             TokenAster |
-             TokenChild |
-             TokenNthChild |
-             TokenFirstChild |
-             TokenLastChild |
-             TokenNthLastChild |
-             TokenAnySibling |
-             TokenOB |
-             TokenCB |
-             TokenOP |
-             TokenCP |
-             TokenDigits String |
-             TokenHash |
-             TokenDot |
-             TokenEquals |
-             TokenIncludes |
-             TokenDashMatch |
-             TokenBeginsWith |
-             TokenEndsWith |
-             TokenQuote |
-             TokenEOF |
-             TokenPseudo deriving (Eq, Show)
 
 alexEOF = return TokenEOF
 
