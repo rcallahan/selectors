@@ -21,6 +21,10 @@ import qualified Data.Text as T
 toAxis :: Selector -> Axis
 toAxis selector = descendant >=> toAxis' selector
 
+mhead :: Monad m => [a] -> m a
+mhead [] = fail "empty"
+mhead (a:_) = return a
+
 toAxis' (Selector selector) = simpleAxis selector
 toAxis' (Combinator simple comb selector) = axis where
     axis = simpleAxis simple >=> combaxis >=> toAxis' selector
@@ -28,7 +32,7 @@ toAxis' (Combinator simple comb selector) = axis where
         Descendant -> descendant
         Child -> child
         AnySibling -> followingSibling
-        FollowingSibling -> return . head . followingSibling
+        FollowingSibling -> mhead . followingSibling
 
 simpleAxis (SimpleSelector mbelem specs mbpseudo) = axis where
     axis = elemaxis >=> specaxis >=> pseuaxis
@@ -37,7 +41,7 @@ simpleAxis (SimpleSelector mbelem specs mbpseudo) = axis where
         Just nm -> element (fromString nm)
     pseuaxis = case mbpseudo of
         Nothing -> return
-        Just FirstChild -> return . head . child
+        Just FirstChild -> mhead . child
         Just LastChild -> return . last . child
     specaxis = loop specs
     loop [] = return
