@@ -28,8 +28,6 @@ data Comb
 -- Contain an optional single element name, a sequence of id, class, and attribute
 -- 'Specifier's, and an optional pseudo-element selector.
 data SimpleSelector = SimpleSelector (Maybe String) [Specifier] (Maybe Pseudo)
-                    -- | Wildcard @ * @ in CSS
-                    | Universal
     deriving (Show, Typeable, Data)
 
 

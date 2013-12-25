@@ -53,7 +53,7 @@ SimpleSelector  : name                              { SimpleSelector (Just $1) [
                 | name specs Pseudo                 { SimpleSelector (Just $1) $2 (Just $3) }
                 | specs                             { SimpleSelector Nothing $1 Nothing }
                 | specs Pseudo                      { SimpleSelector Nothing $1 (Just $2) }
-                | '*'                               { Universal }
+                | '*'                               { SimpleSelector Nothing [] Nothing }
 
 specs   : Specifier                                 { [$1] }
         | specs Specifier                           { $2 : $1 }
