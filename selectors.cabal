@@ -1,5 +1,5 @@
 name:                selectors
-version:             0.0.2.0
+version:             0.0.3.1
 synopsis:            CSS Selectors for DOM traversal
 description:
     This package provides functions for XML DOM traversal that work with "Text.XML.Cursor" from the xml-conduits package. The pure Haskell functions in "XML.Selectors.CSS" include a parser for CSS selector expressions and conversion to an "Axis". A QuasiQuoter is provided in "XML.Selectors.CSS.TH" for static validation of selector expressions.
@@ -20,7 +20,12 @@ library
   other-modules:       XML.Selectors.CSS.Tokens
                        XML.Selectors.CSS.Parse
   other-extensions:    QuasiQuotes, OverloadedStrings, TemplateHaskell, CPP, MagicHash, DeriveDataTypeable
-  build-depends:       base >=4.6 && <4.7, xml-conduit >=1.1 && <1.2, containers >=0.5 && <0.6, text >=0.11 && <0.12, template-haskell >=2.8 && <2.9, array >=0.4 && <0.5
+  build-depends:       base == 4.*
+                     , xml-conduit == 1.*
+                     , containers >=0.5 && <0.6
+                     , text == 1.*
+                     , template-haskell == 2.*
+                     , array >=0.5 && <0.6
   -- hs-source-dirs:      
   build-tools:         alex, happy
   default-language:    Haskell2010
